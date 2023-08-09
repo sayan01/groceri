@@ -1,0 +1,64 @@
+{% extends 'layout.html' %}
+{% block title %}
+    Products of {{category.name}} - Groceri
+{% endblock %}
+{% block content %}
+    <h1>Products of {{category.name}} - Groceri </h1>
+    <div class="heading">
+        <h2 class="text-muted">Products</h2>
+        <a class="btn btn-success" href="{{url_for('add_product', category_id=category.id)}}">
+            <i class="fas fa-plus fa-xs"></i>
+            Add
+        </a>
+    </div>
+    <h5 class="text-muted">
+        <em>
+            Showing Products of Category {{category.name}} only.
+        </em>
+    </h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Manufacture Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in category.products %}
+                <tr>
+                    <td>{{product.id}}</td>
+                    <td>{{product.name}}</td>
+                    <td>{{product.quantity}}</td>
+                    <td>{{product.price}}</td>
+                    <td>{{product.man_date}}</td>
+                    <td>
+                        <a class="btn btn-primary" href="{{url_for('edit_product', id=product.id)}}">
+                            <i class="fas fa-edit fa-xs"></i>
+                            Edit
+                        </a>
+                        <a class="btn btn-danger" href="{{url_for('delete_product', id=product.id)}}">
+                            <i class="fas fa-trash fa-xs"></i>
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block style %}
+<style>
+    .heading{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    h1,h2 {
+        text-align: center;
+    }
+</style>
+{% endblock %}

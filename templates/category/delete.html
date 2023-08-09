@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+{% block title %}
+    Delete Category - Groceri
+{% endblock %}
+{% block content %}
+    <h1>Delete Category</h1>
+    <h2 class="text-danger">
+        Are you sure you want to delete Category
+        <strong>{{category.name}}</strong>
+        ?
+    </h2>
+    <form method="post" class="form">
+        <input type="submit" value="Delete" class="btn btn-danger">
+    </form>
+{% endblock %}
+{% block style %}
+<style>
+    h1 {
+        text-align: center;
+    }
+    h2{
+        margin: 32px auto;
+    }
+    form{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
+{% endblock %}

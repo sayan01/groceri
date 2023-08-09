@@ -1,0 +1,59 @@
+{% extends 'layout.html' %}
+{% block title %}
+    Admin Dashboard - Groceri
+{% endblock %}
+{% block content %}
+    <h1>Admin Dashboard</h1>
+    <div class="heading">
+        <h2 class="text-muted">Categories</h2>
+        <a class="btn btn-success" href="{{url_for('add_category')}}">
+            <i class="fas fa-plus fa-xs"></i>
+            Add
+        </a>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Category ID</th>
+                <th>Category Name</th>
+                <th>Number of Products</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+                <tr>
+                    <td>{{category.id}}</td>
+                    <td>{{category.name}}</td>
+                    <td>{{category.products|length}}</td>
+                    <td>
+                        <a href="{{url_for('show_category', id=category.id)}}" class="btn btn-outline-success">
+                            <i class="fas fa-search    "></i>
+                            Show
+                        </a>
+                        <a class="btn btn-primary" href="{{url_for('edit_category', id=category.id)}}">
+                            <i class="fas fa-edit fa-xs"></i>
+                            Edit
+                        </a>
+                        <a class="btn btn-danger" href="{{url_for('delete_category', id=category.id)}}">
+                            <i class="fas fa-trash fa-xs"></i>
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block style %}
+<style>
+    .heading{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    h1,h2 {
+        text-align: center;
+    }
+</style>
+{% endblock %}
