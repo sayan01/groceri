@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from app import app
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 db = SQLAlchemy(app)
 
@@ -32,6 +33,10 @@ class Product(db.Model):
     quantity = db.Column(db.Integer, nullable = False)
     price = db.Column(db.Float, nullable = False)
     man_date = db.Column(db.Date, nullable = False)
+    
+    ## relationships
+    carts = db.relationship('Cart', backref='product', lazy=True)
+    orders = db.relationship('Order', backref='product', lazy=True)
 
 class Category(db.Model):
     __tablename__ = 'category'
@@ -47,14 +52,22 @@ class Cart(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable = False)
     quantity = db.Column(db.Integer, nullable = False)
 
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    datetime = db.Column(db.DateTime, nullable = False, default = datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
+    total = db.Column(db.Float, nullable = False)
+    
+    ## relationships
+    orders = db.relationship('Order', backref='transaction', lazy=True)
+
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
+    transaction_id = db.Column(db.Integer, db.ForeignKey('transaction.id'), nullable = False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable = False)
     quantity = db.Column(db.Integer, nullable = False)
     price = db.Column(db.Float, nullable = False)
-    datetime = db.Column(db.DateTime, nullable = False)
 
 
 # create database if it doesn't exist

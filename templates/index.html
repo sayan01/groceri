@@ -5,5 +5,161 @@
 {% endblock %}
 
 {% block content %}
-Hello {{user.name}}!
+{% include 'searchbar.html' with context %}
+
+<div class="categories-list">
+    {% for category in categories %}
+        <div class="category">
+                <h3>{{category.name}}</h3>
+                <div class="product-list">
+                    {% for product in category.products %}
+                    {% if (price and product.price <= price ) or (name and name.lower() in product.name.lower()) or (not price and not name) %}
+                        <div class="product">
+                                <div class="product-info">
+                                    <h4>{{product.name}}</h4>
+                                    <p>&#8377;{{product.price}}</p>
+                                    <p>Available: {{product.quantity}}</p>
+                                </div>
+                                {% if product.quantity > 0 %}
+                                    
+                                <div class="add-to-cart">
+                                    <form action="{{url_for('add_to_cart', product_id=product.id)}}" method="POST" class="product-quantity">
+                                        <div class="quantity-buttons">
+                                            <button onclick="decreaseqty({{product.id}})" type="button" class="btn btn-outline-danger">
+                                                <i class="fas fa-minus fa-xs"></i>
+                                            </button>
+                                            <input class="form-control quantity-input-{{product.id}}" type="number" name="quantity" id="quantity" value="1" min="1" max="{{product.quantity}}"  required >
+                                            <button onclick="increaseqty({{product.id}},{{product.quantity}})" type="button" class="btn btn-outline-success">
+                                                <i class="fas fa-plus fa-xs"></i>
+                                            </button>
+                                        </div>
+                                        <button type="submit" class="submit-button">
+                                            <i class="fas fa-cart-plus fa-xs"></i>
+                                            Add to Cart
+                                        </button>
+                                    </form>
+                                </div>
+                                {% else %}
+                                <button type="button" class="btn btn-outline-danger" disabled>
+                                    <i class="fas fa-times    "></i>
+                                    Out of Stock
+                                </button>
+                                {% endif %}
+                            </a>
+                        </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </a>
+        </div>
+    {% endfor %}
+</div>
+
+
+{% endblock %}
+
+{% block style %}
+<style>
+    .categories-list{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .category{
+        width: 100%;
+        margin: 32px 0;
+    }
+    .product-list{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .product{
+        width: 300px;
+        margin: 16px;
+        padding: 16px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .product-info{
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .product-info h4{
+        margin: 0;
+    }
+    .product-info p{
+        margin: 0;
+    }
+    .add-to-cart{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .add-to-cart .submit-button{
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        background-color: #0d6efd;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .add-to-cart .submit-button:hover{
+        background-color: #0b5ed7;
+    }
+    .add-to-cart .submit-button:active{
+        background-color: #0a58c2;
+    }
+    .add-to-cart .submit-button:focus{
+        outline: none;
+    }
+    .product-quantity{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    .quantity-buttons{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 16px;
+    }
+    .product-quantity label{
+        margin-right: 8px;
+    }
+    .product-quantity input{
+        margin: 0 8px;
+        width: 3rem;
+        text-align: center;
+        -moz-appearance: textfield;
+    }
+    .product-quantity input::-webkit-outer-spin-button, .product-quantity input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block script %}
+<script>
+    function increaseqty(id, max){
+        var quantity = document.querySelector(".quantity-input-"+id);
+        if(quantity.value < max){
+            quantity.value = parseInt(quantity.value) + 1;
+        }
+    }
+    function decreaseqty(id){
+        var quantity = document.querySelector(".quantity-input-"+id);
+        if(quantity.value > 1){
+            quantity.value = parseInt(quantity.value) - 1;
+        }
+    }
+</script>
 {% endblock %}

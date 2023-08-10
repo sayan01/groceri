@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
-from models import db, User, Product, Category, Cart, Order
+from models import db, User, Product, Category, Cart, Order, Transaction
 import datetime
 import re
 from app import app
@@ -27,15 +27,6 @@ def admin_required(func):
             return redirect(url_for('index'))
         return func(*args, **kwargs)
     return inner
-
-@app.route('/')
-@auth_required
-def index():
-    user = User.query.get(session['user_id'])
-    if user.is_admin:
-        return redirect(url_for('admin'))
-    else:   
-        return render_template('index.html', user=user)
 
 @app.route('/admin')
 @admin_required
@@ -122,17 +113,6 @@ def register_post():
 def logout():
     session.pop('user_id', None)
     return redirect(url_for('login'))
-
-
-@app.route('/cart')
-@auth_required
-def cart():
-    return ""
-
-@app.route('/orders')
-@auth_required
-def orders():
-    return ""
 
 @app.route('/category/add')
 @admin_required
@@ -358,3 +338,118 @@ def delete_category_post(id):
     db.session.commit()
     flash('Category deleted successfully.')
     return redirect(url_for('admin')) 
+
+
+#--- user routes ---#
+
+@app.route('/')
+@auth_required
+def index():
+    user = User.query.get(session['user_id'])
+    if user.is_admin:
+        return redirect(url_for('admin'))
+    parameter = request.args.get('parameter')
+    query = request.args.get('query')
+    parameters = {
+        'category': 'Category Name',
+        'product': 'Product Name',
+        'price': 'Max Price'
+    }
+    if not parameter or not query:
+        return render_template('index.html', user=user, categories=Category.query.all(), parameters=parameters)
+    if parameter == 'category':
+        categories = Category.query.filter(Category.name.like('%' + query + '%')).all()
+        return render_template('index.html', user=user, categories=categories, query=query, parameter=parameter, parameters=parameters)
+    if parameter == 'product':
+        return render_template('index.html', user=user, categories=Category.query.all(), name=query, query=query, parameter=parameter, parameters=parameters)
+    if parameter == 'price':
+        return render_template('index.html', user=user, categories=Category.query.all(), price=float(query), query=query, parameter=parameter, parameters=parameters)
+
+    return render_template('index.html', user=user, categories=Category.query.all(), parameters=parameters)
+
+
+@app.route('/cart/<int:product_id>/add', methods=['POST'])
+@auth_required
+def add_to_cart(product_id):
+    quantity = request.form.get('quantity')
+    if not quantity or quantity == '':
+        flash('Quantity cannot be empty.')
+        return redirect(url_for('index'))
+    if quantity.isdigit() == False:
+        flash('Quantity must be a number.')
+        return redirect(url_for('index'))
+    quantity = int(quantity)
+    if quantity <= 0:
+        flash('Quantity must be greater than 0.')
+        return redirect(url_for('index'))
+    product = Product.query.get(product_id)
+    if not product:
+        flash('Product does not exist.')
+        return redirect(url_for('index'))
+    if product.quantity < quantity:
+        flash('Quantity must be less than or equal to ' + str(product.quantity) + '.')
+        return redirect(url_for('index'))
+    
+    cart = Cart.query.filter_by(user_id=session['user_id']).filter_by(product_id=product_id).first()
+    if cart:
+        if cart.quantity + quantity > product.quantity:
+            flash('Quantity must be less than or equal to ' + str(product.quantity - cart.quantity) + '.')
+            return redirect(url_for('index'))
+        cart.quantity += quantity
+        db.session.commit()
+        flash('Product added to cart successfully.')
+        return redirect(url_for('index'))
+    cart = Cart(user_id=session['user_id'], product_id=product_id, quantity=quantity)
+    db.session.add(cart)
+    db.session.commit()
+    flash('Product added to cart successfully.')
+    return redirect(url_for('index'))
+
+@app.route('/cart')
+@auth_required
+def cart():
+    carts = Cart.query.filter_by(user_id=session['user_id']).all()
+    total = sum([cart.product.price * cart.quantity for cart in carts])
+    return render_template('cart.html', user=User.query.get(session['user_id']), carts=carts, total=total)
+
+@app.route('/cart/<int:product_id>/delete', methods=['POST'])
+@auth_required
+def delete_from_cart(product_id):
+    cart = Cart.query.filter_by(user_id=session['user_id']).filter_by(product_id=product_id).first()
+    if not cart:
+        flash('Product does not exist in cart.')
+        return redirect(url_for('cart'))
+    db.session.delete(cart)
+    db.session.commit()
+    flash('Product deleted from cart successfully.')
+    return redirect(url_for('cart'))
+
+
+@app.route('/cart/place_order', methods=['POST'])
+@auth_required
+def place_order():
+    items = Cart.query.filter_by(user_id=session['user_id']).all()
+    if not items:
+        flash('Cart is empty.')
+        return redirect(url_for('cart'))
+    for item in items:
+        if item.quantity > item.product.quantity:
+            flash('Quantity of ' + item.product.name + ' must be less than or equal to ' + str(item.product.quantity) + '.')
+            return redirect(url_for('cart'))
+    transaction = Transaction(user_id=session['user_id'], total=0)
+    for item in items:
+        item.product.quantity -= item.quantity
+        order = Order(product_id=item.product_id, quantity=item.quantity, price=item.product.price, transaction=transaction)
+        db.session.add(order)
+        transaction.total += order.price * order.quantity
+        db.session.delete(item)
+        db.session.commit()
+    flash('Order placed successfully.')
+    return redirect(url_for('orders'))
+
+@app.route('/orders')
+@auth_required
+def orders():
+    user = User.query.get(session['user_id'])
+    transactions = Transaction.query.filter_by(user_id=session['user_id']).order_by(Transaction.datetime.desc()).all()
+    return render_template('orders.html', user=user, transactions=transactions)

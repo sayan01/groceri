@@ -1,0 +1,81 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+
+My Cart - Groceri
+    
+{% endblock %}
+
+{% block content %}
+
+
+<div class="heading">
+    <h1>Cart</h1>
+    <form action="{{url_for('place_order')}}" method="post"><button type="submit" class="btn btn-success">
+        <i class="fas fa-dollar-sign    "></i>
+        Place Order
+    </button>
+    </form>
+</div>
+<hr>
+<div class="cart-details">
+    {% if carts %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in carts %}
+            <tr>
+                <td>{{item.product.name}}</td>
+                <td>{{item.quantity}}</td>
+                <td>{{item.product.price}}</td>
+                <td>{{item.product.price * item.quantity}}</td>
+                <td>
+                    <form action="{{url_for('delete_from_cart', product_id=item.product.id)}}" method="post">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash-alt    "></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3">Grand Total</td>
+                <td colspan="2">{{total}}</td>
+            </tr>
+        </tfoot>
+    </table>
+    {% else %}
+        <p class="text-muted text-center fs-5"><em>You do not have anything in your cart yet.</em></p>
+    {% endif %}
+</div>
+
+
+{% endblock %}
+
+{% block style %}
+
+<style>
+    .heading{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+</style>
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

@@ -25,12 +25,21 @@
 <!-- show the flash errors -->
 {% with messages = get_flashed_messages() %}
     {% if messages %}
+        <div class="container">
         {% for message in messages %}
+            {% if "success" in message.lower() %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% else %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+            {% endif %}
         {% endfor %}
+        </div>
     {% endif %}
 {% endwith %}
  <div class="container">

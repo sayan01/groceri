@@ -1,0 +1,78 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+
+My Orders - Groceri
+    
+{% endblock %}
+
+{% block content %}
+
+
+<div class="heading">
+    <h1>My Orders</h1>
+    <button type="button" class="btn btn-primary" onclick="window.print()">
+        <i class="fas fa-print    "></i>
+        Print
+    </button>
+</div>
+<hr>
+<div class="order-details">
+    {% if transactions %}
+        {% for transaction in transactions %}
+            <div class="heading">
+                <h5 class="text-muted">Transaction Number: {{transaction.id}}</h5>
+                <p class="text-muted f-4">({{transaction.datetime}})</p>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in transaction.orders %}
+                    <tr>
+                        <td>{{item.product.name}}</td>
+                        <td>{{item.quantity}}</td>
+                        <td>{{item.price}}</td>
+                        <td>{{item.price * item.quantity}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3">Grand Total</td>
+                        <td colspan="2">{{transaction.total}}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted text-center fs-5"><em>You do not have anything transactions yet.</em></p>
+    {% endif %}
+</div>
+
+
+{% endblock %}
+
+{% block style %}
+
+<style>
+    .heading{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+</style>
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}
