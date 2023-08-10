@@ -143,7 +143,7 @@ def add_category():
 @admin_required
 def add_category_post():
     name = request.form.get('name')
-    if name == '':
+    if not name or name == '':
         flash('Category name cannot be empty.')
         return redirect(url_for('add_category'))
     if len(name) > 64:
@@ -164,10 +164,10 @@ def show_category(id):
 @admin_required
 def add_product():
     category_id = -1
-    args = request.args
-    if 'category_id' in args:
-        if Category.query.get(int(args.get('category_id'))):
-            category_id = int(args.get('category_id'))
+    c = request.args.get('category_id', '')
+    if c and c != '' and c.isdigit():
+        if Category.query.get(int(c)):
+            category_id = int(c)
 
     return render_template('product/add.html', 
                            user=User.query.get(session['user_id']), 
@@ -188,20 +188,20 @@ def add_product_post():
     price = request.form.get('price')
     category = request.form.get('category')
     man_date = request.form.get('manufacture_date')
-    if name == '':
+    if not name or name == '':
         flash('Product name cannot be empty.')
         return redirect(url_for('add_product'))
     if len(name) > 64:
         flash('Product name cannot be greater than 64 characters.')
         return redirect(url_for('add_product'))
-    if quantity == '':
+    if not quantity or quantity == '':
         flash('Quantity cannot be empty.')
         return redirect(url_for('add_product'))
     if quantity.isdigit() == False:
         flash('Quantity must be a number.')
         return redirect(url_for('add_product'))
     quantity = int(quantity)
-    if price == '':
+    if not price or price == '':
         flash('Price cannot be empty.')
         return redirect(url_for('add_product'))
     if not re.match(r'^\d+(\.\d+)?$', price):
@@ -215,7 +215,7 @@ def add_product_post():
     if not category:
         flash('Category does not exist.')
         return redirect(url_for('add_product'))
-    if man_date == '':
+    if not man_date or man_date == '':
         flash('Manufacture date cannot be empty.')
         return redirect(url_for('add_product'))
     try:
@@ -250,34 +250,34 @@ def edit_product_post(id):
     price = request.form.get('price')
     category = request.form.get('category')
     man_date = request.form.get('manufacture_date')
-    if name == '':
+    if not name or name == '':
         flash('Product name cannot be empty.')
         return redirect(url_for('add_product'))
     if len(name) > 64:
         flash('Product name cannot be greater than 64 characters.')
         return redirect(url_for('add_product'))
-    if quantity == '':
+    if not quantity or quantity == '':
         flash('Quantity cannot be empty.')
         return redirect(url_for('add_product'))
     if quantity.isdigit() == False:
         flash('Quantity must be a number.')
         return redirect(url_for('add_product'))
     quantity = int(quantity)
-    if price == '':
+    if not price or price == '':
         flash('Price cannot be empty.')
         return redirect(url_for('add_product'))
     if not re.match(r'^\d+(\.\d+)?$', price):
         flash('Price must be a number.')
         return redirect(url_for('add_product'))
     price = float(price)
-    if category == '':
+    if not category or category == '':
         flash('Category cannot be empty.')
         return redirect(url_for('add_product'))
     category = Category.query.get(category)
     if not category:
         flash('Category does not exist.')
         return redirect(url_for('add_product'))
-    if man_date == '':
+    if not man_date or man_date == '':
         flash('Manufacture date cannot be empty.')
         return redirect(url_for('add_product'))
     try:
@@ -327,7 +327,7 @@ def edit_category(id):
 def edit_category_post(id):
     category = Category.query.get(id)
     name = request.form.get('name')
-    if name == '':
+    if not name or name == '':
         flash('Category name cannot be empty.')
         return redirect(url_for('edit_category', id=id))
     if len(name) > 64:
